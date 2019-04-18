@@ -68,29 +68,6 @@ def print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, s
     loss_ratios = (decoder_losses[0]/x_norm, decoder_losses[1]/sindy_predict_norm)
     print("decoder loss ratio: %f, decoder SINDy loss  ratio: %f" % loss_ratios)
 
-def load_saved_model(test_data, params, keys_to_run):
-    autoencoder_network = full_network(params)
-    learning_rate = tf.placeholder(tf.float32, name='learning_rate')
-    saver = tf.train.Saver(var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
-
-    test_dict = create_feed_dictionary(test_data, params)
-
-    run_tuple = ()
-    for key in keys_to_run:
-        run_tuple += (autoencoder_network[key],)
-    
-    results_dict = {}
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
-        saver.restore(sess, params['save_name'])
-
-        results = sess.run(run_tuple, feed_dict=test_dict)
-    
-    for i,key in enumerate(keys_to_run):
-        results_dict[key] = results[i]
-    
-    return results_dict
-
 
 def create_feed_dictionary(data, params, idxs=None):
     if idxs is None:
