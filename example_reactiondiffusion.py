@@ -26,19 +26,19 @@ def get_rd_data(random=True):
         test_samples = np.arange(int(.9*n_samples), n_samples)
 
     training_data = {'t': data['t'][training_samples],
-                     'x': data['x'].T,
-                     'y': data['y'].T,
-                     'u': data['uf'][:,:,training_samples].reshape((N,-1)).T,
-                     'du': data['duf'][:,:,training_samples].reshape((N,-1)).T}
+                     'y1': data['x'].T,
+                     'y2': data['y'].T,
+                     'x': data['uf'][:,:,training_samples].reshape((N,-1)).T,
+                     'dx': data['duf'][:,:,training_samples].reshape((N,-1)).T}
     val_data = {'t': data['t'][val_samples],
-                'x': data['x'].T,
-                'y': data['y'].T,
-                'u': data['uf'][:,:,val_samples].reshape((N,-1)).T,
-                'du': data['duf'][:,:,val_samples].reshape((N,-1)).T}
+                'y1': data['x'].T,
+                'y2': data['y'].T,
+                'x': data['uf'][:,:,val_samples].reshape((N,-1)).T,
+                'dx': data['duf'][:,:,val_samples].reshape((N,-1)).T}
     test_data = {'t': data['t'][test_samples],
-                 'x': data['x'].T,
-                 'y': data['y'].T,
-                 'u': data['uf'][:,:,test_samples].reshape((N,-1)).T,
-                 'du': data['duf'][:,:,test_samples].reshape((N,-1)).T}
+                 'y1': data['x'].T,
+                 'y2': data['y'].T,
+                 'x': data['uf'][:,:,test_samples].reshape((N,-1)).T,
+                 'dx': data['duf'][:,:,test_samples].reshape((N,-1)).T}
 
     return training_data, val_data, test_data

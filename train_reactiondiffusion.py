@@ -14,7 +14,7 @@ params = {}
 # generate training, validation, testing data
 training_data, val_data, test_data = get_rd_data()
 
-params['N'] = training_data['x'].size*training_data['y'].size
+params['N'] = training_data['y1'].size*training_data['y2'].size
 params['d'] = 2
 params['model_order'] = 1
 params['poly_order'] = 3

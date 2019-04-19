@@ -38,7 +38,7 @@ params['activation'] = 'sigmoid'
 params['widths'] = [64,32]
 
 # training parameters
-params['epoch_size'] = training_data['u'].shape[0]
+params['epoch_size'] = training_data['x'].shape[0]
 params['batch_size'] = 8000
 params['learning_rate'] = 1e-3
 

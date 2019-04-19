@@ -14,7 +14,7 @@ params = {}
 # generate training, validation, testing data
 training_data, val_data, test_data = get_pendulum_data(100, 10, 10)
 
-params['N'] = training_data['u'].shape[-1]
+params['N'] = training_data['x'].shape[-1]
 params['d'] = 1
 params['model_order'] = 2
 params['poly_order'] = 3
@@ -38,7 +38,7 @@ params['activation'] = 'sigmoid'
 params['widths'] = [128,64,32]
 
 # training parameters
-params['epoch_size'] = training_data['u'].shape[0]
+params['epoch_size'] = training_data['x'].shape[0]
 params['batch_size'] = 1024
 params['learning_rate'] = 1e-4
 

@@ -17,23 +17,23 @@ def get_lorenz_data(n_training_ics, n_validation_ics, n_test_ics):
     # training data
     ics = ic_widths*(np.random.rand(n_training_ics, 3)-.5) + ic_means
     training_data = generate_lorenz_data(ics, t, N, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    training_data['u'] = training_data['u'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
-    training_data['du'] = training_data['du'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
-    training_data['ddu'] = training_data['ddu'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
+    training_data['x'] = training_data['u'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
+    training_data['dx'] = training_data['du'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
+    training_data['ddx'] = training_data['ddu'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
 
     # validation data
     ics = ic_widths*(np.random.rand(n_validation_ics, 3)-.5) + ic_means
     val_data = generate_lorenz_data(ics, t, 128, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    val_data['u'] = val_data['u'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
-    val_data['du'] = val_data['du'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
-    val_data['ddu'] = val_data['ddu'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
+    val_data['x'] = val_data['u'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
+    val_data['dx'] = val_data['du'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
+    val_data['ddx'] = val_data['ddu'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
     
     # test data
     ics = ic_widths*(np.random.rand(n_test_ics, 3)-.5) + ic_means
     test_data = generate_lorenz_data(ics, t, 128, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    test_data['u'] = test_data['u'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
-    test_data['du'] = test_data['du'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
-    test_data['ddu'] = test_data['ddu'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
+    test_data['x'] = test_data['u'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
+    test_data['dx'] = test_data['du'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
+    test_data['ddx'] = test_data['ddu'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
 
     return training_data, val_data, test_data
 

@@ -6,29 +6,29 @@ def get_pendulum_data(n_training_ics, n_validation_ics, n_test_ics):
     t,u,du,ddu,v = generate_pendulum_data(n_training_ics)
     training_data = {}
     training_data['t'] = t
-    training_data['u'] = u.reshape((n_training_ics*t.size, -1))
-    training_data['du'] = du.reshape((n_training_ics*t.size, -1))
-    training_data['ddu'] = ddu.reshape((n_training_ics*t.size, -1))
-    training_data['v'] = v.reshape((n_training_ics*t.size, -1))[:,0:1]
-    training_data['dv'] = v.reshape((n_training_ics*t.size, -1))[:,1:2]
+    training_data['x'] = u.reshape((n_training_ics*t.size, -1))
+    training_data['dx'] = du.reshape((n_training_ics*t.size, -1))
+    training_data['ddx'] = ddu.reshape((n_training_ics*t.size, -1))
+    training_data['z'] = v.reshape((n_training_ics*t.size, -1))[:,0:1]
+    training_data['dz'] = v.reshape((n_training_ics*t.size, -1))[:,1:2]
 
     t,u,du,ddu,v = generate_pendulum_data(n_validation_ics)
     val_data = {}
     val_data['t'] = t
-    val_data['u'] = u.reshape((n_validation_ics*t.size, -1))
-    val_data['du'] = du.reshape((n_validation_ics*t.size, -1))
-    val_data['ddu'] = ddu.reshape((n_validation_ics*t.size, -1))
-    val_data['v'] = v.reshape((n_validation_ics*t.size, -1))[:,0:1]
-    val_data['dv'] = v.reshape((n_validation_ics*t.size, -1))[:,1:2]
+    val_data['x'] = u.reshape((n_validation_ics*t.size, -1))
+    val_data['dx'] = du.reshape((n_validation_ics*t.size, -1))
+    val_data['ddx'] = ddu.reshape((n_validation_ics*t.size, -1))
+    val_data['z'] = v.reshape((n_validation_ics*t.size, -1))[:,0:1]
+    val_data['dz'] = v.reshape((n_validation_ics*t.size, -1))[:,1:2]
 
     t,u,du,ddu,v = generate_pendulum_data(n_test_ics)
     test_data = {}
     test_data['t'] = t
-    test_data['u'] = u.reshape((n_test_ics*t.size, -1))
-    test_data['du'] = du.reshape((n_test_ics*t.size, -1))
-    test_data['ddu'] = ddu.reshape((n_test_ics*t.size, -1))
-    test_data['v'] = v.reshape((n_test_ics*t.size, -1))[:,0:1]
-    test_data['dv'] = v.reshape((n_test_ics*t.size, -1))[:,1:2]
+    test_data['x'] = u.reshape((n_test_ics*t.size, -1))
+    test_data['dx'] = du.reshape((n_test_ics*t.size, -1))
+    test_data['ddx'] = ddu.reshape((n_test_ics*t.size, -1))
+    test_data['z'] = v.reshape((n_test_ics*t.size, -1))[:,0:1]
+    test_data['dz'] = v.reshape((n_test_ics*t.size, -1))[:,1:2]
 
     return training_data, val_data, test_data
 
