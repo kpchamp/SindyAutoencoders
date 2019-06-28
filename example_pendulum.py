@@ -3,53 +3,53 @@ from scipy.integrate import odeint
 
 
 def get_pendulum_data(n_training_ics, n_validation_ics, n_test_ics):
-    t,u,du,ddu,v = generate_pendulum_data(n_training_ics)
+    t,x,dx,ddx,z = generate_pendulum_data(n_training_ics)
     training_data = {}
     training_data['t'] = t
-    training_data['x'] = u.reshape((n_training_ics*t.size, -1))
-    training_data['dx'] = du.reshape((n_training_ics*t.size, -1))
-    training_data['ddx'] = ddu.reshape((n_training_ics*t.size, -1))
-    training_data['z'] = v.reshape((n_training_ics*t.size, -1))[:,0:1]
-    training_data['dz'] = v.reshape((n_training_ics*t.size, -1))[:,1:2]
+    training_data['x'] = x.reshape((n_training_ics*t.size, -1))
+    training_data['dx'] = dx.reshape((n_training_ics*t.size, -1))
+    training_data['ddx'] = ddx.reshape((n_training_ics*t.size, -1))
+    training_data['z'] = z.reshape((n_training_ics*t.size, -1))[:,0:1]
+    training_data['dz'] = z.reshape((n_training_ics*t.size, -1))[:,1:2]
 
-    t,u,du,ddu,v = generate_pendulum_data(n_validation_ics)
+    t,x,dx,ddx,z = generate_pendulum_data(n_validation_ics)
     val_data = {}
     val_data['t'] = t
-    val_data['x'] = u.reshape((n_validation_ics*t.size, -1))
-    val_data['dx'] = du.reshape((n_validation_ics*t.size, -1))
-    val_data['ddx'] = ddu.reshape((n_validation_ics*t.size, -1))
-    val_data['z'] = v.reshape((n_validation_ics*t.size, -1))[:,0:1]
-    val_data['dz'] = v.reshape((n_validation_ics*t.size, -1))[:,1:2]
+    val_data['x'] = x.reshape((n_validation_ics*t.size, -1))
+    val_data['dx'] = dx.reshape((n_validation_ics*t.size, -1))
+    val_data['ddx'] = ddx.reshape((n_validation_ics*t.size, -1))
+    val_data['z'] = z.reshape((n_validation_ics*t.size, -1))[:,0:1]
+    val_data['dz'] = z.reshape((n_validation_ics*t.size, -1))[:,1:2]
 
-    t,u,du,ddu,v = generate_pendulum_data(n_test_ics)
+    t,x,dx,ddx,z = generate_pendulum_data(n_test_ics)
     test_data = {}
     test_data['t'] = t
-    test_data['x'] = u.reshape((n_test_ics*t.size, -1))
-    test_data['dx'] = du.reshape((n_test_ics*t.size, -1))
-    test_data['ddx'] = ddu.reshape((n_test_ics*t.size, -1))
-    test_data['z'] = v.reshape((n_test_ics*t.size, -1))[:,0:1]
-    test_data['dz'] = v.reshape((n_test_ics*t.size, -1))[:,1:2]
+    test_data['x'] = x.reshape((n_test_ics*t.size, -1))
+    test_data['dx'] = dx.reshape((n_test_ics*t.size, -1))
+    test_data['ddx'] = ddx.reshape((n_test_ics*t.size, -1))
+    test_data['z'] = z.reshape((n_test_ics*t.size, -1))[:,0:1]
+    test_data['dz'] = z.reshape((n_test_ics*t.size, -1))[:,1:2]
 
     return training_data, val_data, test_data
 
 
 def generate_pendulum_data(n_ics):
-    f  = lambda x, t : [x[1], -np.sin(x[0])]
+    f  = lambda z, t : [z[1], -np.sin(z[0])]
     t = np.arange(0, 10, .02)
 
-    x = np.zeros((n_ics,t.size,2))
-    dx = np.zeros(x.shape)
+    z = np.zeros((n_ics,t.size,2))
+    dz = np.zeros(z.shape)
 
-    x1range = np.array([-np.pi,np.pi])
-    x2range = np.array([-2.1,2.1])
+    z1range = np.array([-np.pi,np.pi])
+    z2range = np.array([-2.1,2.1])
     i = 0
     while (i < n_ics):
-        x0 = np.array([(x1range[1]-x1range[0])*np.random.rand()+x1range[0],
-            (x2range[1]-x2range[0])*np.random.rand()+x2range[0]])
-        if np.abs(x0[1]**2/2. - np.cos(x0[0])) > .99:
+        z0 = np.array([(z1range[1]-z1range[0])*np.random.rand()+z1range[0],
+            (z2range[1]-z2range[0])*np.random.rand()+z2range[0]])
+        if np.abs(z0[1]**2/2. - np.cos(z0[0])) > .99:
             continue
-        x[i] = odeint(f, x0, t)
-        dx[i] = np.array([f(x[i,j], t[j]) for j in range(len(t))])
+        z[i] = odeint(f, z0, t)
+        dz[i] = np.array([f(z[i,j], t[j]) for j in range(len(t))])
         i += 1
 
     n = 51
@@ -64,21 +64,21 @@ def generate_pendulum_data(n_ics):
                                                                + (yy - np.sin(theta-np.pi/2))*(np.sin(theta-np.pi/2))*dtheta**2 \
                                                                + (yy - np.sin(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*ddtheta)
         
-    u = np.zeros((n_ics, t.size, n, n))
-    du = np.zeros((n_ics, t.size, n, n))
-    ddu = np.zeros((n_ics, t.size, n, n))
+    x = np.zeros((n_ics, t.size, n, n))
+    dx = np.zeros((n_ics, t.size, n, n))
+    ddx = np.zeros((n_ics, t.size, n, n))
     for i in range(n_ics):
         for j in range(t.size):
-            x[i,j,0] = wrap_to_pi(x[i,j,0])
-            u[i,j] = create_image(x[i,j,0])
-            du[i,j] = (create_image(x[i,j,0])*argument_derivative(x[i,j,0], dx[i,j,0]))
-            ddu[i,j] = create_image(x[i,j,0])*((argument_derivative(x[i,j,0], dx[i,j,0]))**2 \
-                            + argument_derivative2(x[i,j,0], dx[i,j,0], dx[i,j,1]))
+            z[i,j,0] = wrap_to_pi(z[i,j,0])
+            x[i,j] = create_image(z[i,j,0])
+            dx[i,j] = (create_image(z[i,j,0])*argument_derivative(z[i,j,0], dz[i,j,0]))
+            ddx[i,j] = create_image(z[i,j,0])*((argument_derivative(z[i,j,0], dz[i,j,0]))**2 \
+                            + argument_derivative2(z[i,j,0], dz[i,j,0], dz[i,j,1]))
 
-    return t,u,du,ddu,x
+    return t,x,dx,ddx,z
 
 
-def wrap_to_pi(x):
-    x_mod = x % (2*np.pi)
-    subtract_m = (x_mod > np.pi) * (-2*np.pi)
-    return x_mod + subtract_m
+def wrap_to_pi(z):
+    z_mod = z % (2*np.pi)
+    subtract_m = (z_mod > np.pi) * (-2*np.pi)
+    return z_mod + subtract_m

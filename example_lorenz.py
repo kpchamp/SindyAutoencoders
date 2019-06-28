@@ -17,23 +17,23 @@ def get_lorenz_data(n_training_ics, n_validation_ics, n_test_ics):
     # training data
     ics = ic_widths*(np.random.rand(n_training_ics, 3)-.5) + ic_means
     training_data = generate_lorenz_data(ics, t, N, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    training_data['x'] = training_data['u'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
-    training_data['dx'] = training_data['du'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
-    training_data['ddx'] = training_data['ddu'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
+    training_data['x'] = training_data['x'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
+    training_data['dx'] = training_data['dx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
+    training_data['ddx'] = training_data['ddx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
 
     # validation data
     ics = ic_widths*(np.random.rand(n_validation_ics, 3)-.5) + ic_means
     val_data = generate_lorenz_data(ics, t, 128, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    val_data['x'] = val_data['u'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
-    val_data['dx'] = val_data['du'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
-    val_data['ddx'] = val_data['ddu'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
+    val_data['x'] = val_data['x'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
+    val_data['dx'] = val_data['dx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
+    val_data['ddx'] = val_data['ddx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
     
     # test data
     ics = ic_widths*(np.random.rand(n_test_ics, 3)-.5) + ic_means
     test_data = generate_lorenz_data(ics, t, 128, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    test_data['x'] = test_data['u'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
-    test_data['dx'] = test_data['du'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
-    test_data['ddx'] = test_data['ddu'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
+    test_data['x'] = test_data['x'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
+    test_data['dx'] = test_data['dx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
+    test_data['ddx'] = test_data['ddx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
 
     return training_data, val_data, test_data
 
@@ -53,88 +53,88 @@ def lorenz_coefficients(normalization, poly_order=3):
     return Xi
 
 
-def simulate_lorenz(x0, t):
+def simulate_lorenz(z0, t):
     sigma = 10.
     beta = 8/3
     rho = 28 
-    f = lambda x,t : [sigma*(x[1] - x[0]), x[0]*(rho - x[2]) - x[1], x[0]*x[1] - beta*x[2]]
-    df = lambda x,dx,t : [sigma*(dx[1] - dx[0]),
-                          dx[0]*(rho - x[2]) + x[0]*(-dx[2]) - dx[1],
-                          dx[0]*x[1] + x[0]*dx[1] - beta*dx[2]]
+    f = lambda z,t : [sigma*(z[1] - z[0]), z[0]*(rho - z[2]) - z[1], z[0]*z[1] - beta*z[2]]
+    df = lambda z,dz,t : [sigma*(dz[1] - dz[0]),
+                          dz[0]*(rho - z[2]) + z[0]*(-dz[2]) - dz[1],
+                          dz[0]*z[1] + z[0]*dz[1] - beta*dz[2]]
 
-    v = odeint(f, x0, t)
+    z = odeint(f, z0, t)
 
     dt = t[1] - t[0]
-    dv = np.zeros(v.shape)
-    ddv = np.zeros(v.shape)
+    dz = np.zeros(z.shape)
+    ddz = np.zeros(z.shape)
     for i in range(t.size):
-        dv[i] = f(v[i],dt*i)
-        ddv[i] = df(v[i], dv[i], dt*i)
-    return v, dv, ddv
+        dz[i] = f(z[i],dt*i)
+        ddz[i] = df(z[i], dz[i], dt*i)
+    return z, dz, ddz
 
 
 def generate_lorenz_data(ics, t, n_points, linear=True, normalization=None):
     sigma = 10.
     beta = 8/3
     rho = 28 
-    f = lambda x,t : [sigma*(x[1] - x[0]), x[0]*(rho - x[2]) - x[1], x[0]*x[1] - beta*x[2]]
+    f = lambda z,t : [sigma*(z[1] - z[0]), z[0]*(rho - z[2]) - z[1], z[0]*z[1] - beta*z[2]]
 
     n_ics = ics.shape[0]
     n_steps = t.size
     dt = t[1]-t[0]
 
     d = 3
-    v = np.zeros((n_ics,n_steps,d))
-    dv = np.zeros(v.shape)
-    ddv = np.zeros(v.shape)
+    z = np.zeros((n_ics,n_steps,d))
+    dz = np.zeros(z.shape)
+    ddz = np.zeros(z.shape)
     for i in range(n_ics):
-        v[i], dv[i], ddv[i] = simulate_lorenz(ics[i], t)
+        z[i], dz[i], ddz[i] = simulate_lorenz(ics[i], t)
 
 
     if normalization is not None:
-        v *= normalization
-        dv *= normalization
-        ddv *= normalization
+        z *= normalization
+        dz *= normalization
+        ddz *= normalization
 
     n = n_points
     L = 1
-    x = np.linspace(-L,L,n)
+    y_spatial = np.linspace(-L,L,n)
 
     modes = np.zeros((2*d, n))
     for i in range(2*d):
-        modes[i] = legendre(i)(x)
-    u1 = np.zeros((n_ics,n_steps,n))
-    u2 = np.zeros((n_ics,n_steps,n))
-    u3 = np.zeros((n_ics,n_steps,n))
-    u4 = np.zeros((n_ics,n_steps,n))
-    u5 = np.zeros((n_ics,n_steps,n))
-    u6 = np.zeros((n_ics,n_steps,n))
+        modes[i] = legendre(i)(y_spatial)
+    x1 = np.zeros((n_ics,n_steps,n))
+    x2 = np.zeros((n_ics,n_steps,n))
+    x3 = np.zeros((n_ics,n_steps,n))
+    x4 = np.zeros((n_ics,n_steps,n))
+    x5 = np.zeros((n_ics,n_steps,n))
+    x6 = np.zeros((n_ics,n_steps,n))
 
-    u = np.zeros((n_ics,n_steps,n))
-    du = np.zeros(u.shape)
-    ddu = np.zeros(u.shape)
+    x = np.zeros((n_ics,n_steps,n))
+    dx = np.zeros(x.shape)
+    ddx = np.zeros(x.shape)
     for i in range(n_ics):
         for j in range(n_steps):
-            u1[i,j] = modes[0]*v[i,j,0]
-            u2[i,j] = modes[1]*v[i,j,1]
-            u3[i,j] = modes[2]*v[i,j,2]
-            u4[i,j] = modes[3]*v[i,j,0]**3
-            u5[i,j] = modes[4]*v[i,j,1]**3
-            u6[i,j] = modes[5]*v[i,j,2]**3
+            x1[i,j] = modes[0]*z[i,j,0]
+            x2[i,j] = modes[1]*z[i,j,1]
+            x3[i,j] = modes[2]*z[i,j,2]
+            x4[i,j] = modes[3]*z[i,j,0]**3
+            x5[i,j] = modes[4]*z[i,j,1]**3
+            x6[i,j] = modes[5]*z[i,j,2]**3
 
-            u[i,j] = u1[i,j] + u2[i,j] + u3[i,j]
+            x[i,j] = x1[i,j] + x2[i,j] + x3[i,j]
             if not linear:
-                u[i,j] += u4[i,j] + u5[i,j] + u6[i,j]
+                x[i,j] += x4[i,j] + x5[i,j] + x6[i,j]
 
-            du[i,j] = modes[0]*dv[i,j,0] + modes[1]*dv[i,j,1] + modes[2]*dv[i,j,2]
+            dx[i,j] = modes[0]*dz[i,j,0] + modes[1]*dz[i,j,1] + modes[2]*dz[i,j,2]
             if not linear:
-                du[i,j] += modes[3]*3*(v[i,j,0]**2)*dv[i,j,0] + modes[4]*3*(v[i,j,1]**2)*dv[i,j,1] + modes[5]*3*(v[i,j,2]**2)*dv[i,j,2]
+                dx[i,j] += modes[3]*3*(z[i,j,0]**2)*dz[i,j,0] + modes[4]*3*(z[i,j,1]**2)*dz[i,j,1] + modes[5]*3*(z[i,j,2]**2)*dz[i,j,2]
             
-            ddu[i,j] = modes[0]*ddv[i,j,0] + modes[1]*ddv[i,j,1] + modes[2]*ddv[i,j,2]
+            ddx[i,j] = modes[0]*ddz[i,j,0] + modes[1]*ddz[i,j,1] + modes[2]*ddz[i,j,2]
             if not linear:
-                ddu[i,j] += modes[3]*(6*v[i,j,0]*dv[i,j,0]**2 + 3*(v[i,j,0]**2)*ddv[i,j,0]) \
-                          + modes[4]*(6*v[i,j,1]*dv[i,j,1]**2 + 3*(v[i,j,1]**2)*ddv[i,j,1]) \
-                          + modes[5]*(6*v[i,j,2]*dv[i,j,2]**2 + 3*(v[i,j,2]**2)*ddv[i,j,2])
+                ddx[i,j] += modes[3]*(6*z[i,j,0]*dz[i,j,0]**2 + 3*(z[i,j,0]**2)*ddz[i,j,0]) \
+                          + modes[4]*(6*z[i,j,1]*dz[i,j,1]**2 + 3*(z[i,j,1]**2)*ddz[i,j,1]) \
+                          + modes[5]*(6*z[i,j,2]*dz[i,j,2]**2 + 3*(z[i,j,2]**2)*ddz[i,j,2])
 
     if normalization is None:
         Xi = lorenz_coefficients([1,1,1])
@@ -143,13 +143,13 @@ def generate_lorenz_data(ics, t, n_points, linear=True, normalization=None):
 
     data = {}
     data['t'] = t
+    data['y_spatial'] = y_spatial
     data['x'] = x
-    data['u'] = u
-    data['du'] = du
-    data['ddu'] = ddu
-    data['v'] = v
-    data['dv'] = dv
-    data['ddv'] = ddv
+    data['dx'] = dx
+    data['ddx'] = ddx
+    data['z'] = z
+    data['dz'] = dz
+    data['ddz'] = ddz
     data['Xi'] = Xi.astype(np.float32)
 
     return data
