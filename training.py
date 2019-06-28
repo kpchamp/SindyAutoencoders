@@ -15,11 +15,11 @@ def train_network(training_data, val_data, params):
 
     validation_dict = create_feed_dictionary(val_data, params, idxs=None)
 
-    x_norm = np.mean(val_data['u']**2)
+    x_norm = np.mean(val_data['x']**2)
     if params['model_order'] == 1:
-        sindy_predict_norm = np.mean(val_data['du']**2)
+        sindy_predict_norm = np.mean(val_data['dx']**2)
     else:
-        sindy_predict_norm = np.mean(val_data['ddu']**2)
+        sindy_predict_norm = np.mean(val_data['ddx']**2)
 
     print('TRAINING')
     with tf.Session() as sess:
@@ -57,6 +57,19 @@ def train_network(training_data, val_data, params):
 
 
 def print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, sindy_predict_norm):
+    """
+    Print loss function values to keep track of the training progress.
+
+    Arguments:
+        sess - the tensorflow session
+        i - the training iteration
+        loss - tensorflow object representing the total loss function used in training
+        losses - tuple of the individual losses that make up the total loss
+        train_dict - feed dictionary of training data
+        validation_dict - feed dictionary of validation data
+        x_norm - float, the mean square value of the input
+
+    """
     training_loss_vals = sess.run((loss,) + tuple(losses.values()), feed_dict=train_dict)
     validation_loss_vals = sess.run((loss,) + tuple(losses.values()), feed_dict=validation_dict)
     print("Epoch %d" % i)
@@ -71,12 +84,12 @@ def print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, s
 
 def create_feed_dictionary(data, params, idxs=None):
     if idxs is None:
-        idxs = np.arange(data['u'].shape[0])
+        idxs = np.arange(data['x'].shape[0])
     feed_dict = {}
-    feed_dict['x:0'] = data['u'][idxs]
-    feed_dict['dx:0'] = data['du'][idxs]
+    feed_dict['x:0'] = data['x'][idxs]
+    feed_dict['dx:0'] = data['dx'][idxs]
     if params['model_order'] == 2:
-        feed_dict['ddx:0'] = data['ddu'][idxs]
+        feed_dict['ddx:0'] = data['ddx'][idxs]
     if params['sequential_thresholding']:
         feed_dict['coefficient_mask:0'] = params['coefficient_mask']
     feed_dict['learning_rate:0'] = params['learning_rate']
