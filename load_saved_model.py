@@ -15,9 +15,9 @@ example_problem = sys.argv[1]
 save_name = data_path + sys.argv[2]
 
 if example_problem == 'lorenz':
-    test_data = get_lorenz_data(1, 1, 100)[2]
+    test_data = get_lorenz_data(100)
 elif example_problem == 'pendulum':
-    test_data = get_pendulum_data(1, 1, 50)[2]
+    test_data = get_pendulum_data(50)
 else:
     test_data = get_rd_data()[2]
 
