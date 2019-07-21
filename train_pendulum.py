@@ -12,7 +12,8 @@ import tensorflow as tf
 params = {}
 
 # generate training, validation, testing data
-training_data, val_data, test_data = get_pendulum_data(100, 10, 10)
+training_data = get_pendulum_data(100)
+validation_data = get_pendulum_data(10)
 
 params['N'] = training_data['x'].shape[-1]
 params['d'] = 1
@@ -61,10 +62,7 @@ for i in range(num_experiments):
 
     tf.reset_default_graph()
 
-    num_epochs, x_norm, ddx_norm, decoder_loss, decoder_sindy_loss, sindy_regularization = train_network(training_data, val_data, params)
-    results_dict = {'num_epochs': num_epochs, 'x_norm': x_norm,
-                    'ddx_norm': ddx_norm, 'decoder_loss': decoder_loss,
-                    'decoder_sindy_loss': decoder_sindy_loss, 'sindy_regularization': sindy_regularization}
+    results_dict = train_network(training_data, validation_data, params)
     df = df.append({**results_dict, **params}, ignore_index=True)
 
 df.to_pickle('experiment_results_' + datetime.datetime.now().strftime("%Y%m%d%H%M") + '.pkl')

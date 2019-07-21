@@ -21,6 +21,9 @@ def train_network(training_data, val_data, params):
     else:
         sindy_predict_norm = np.mean(val_data['ddx']**2)
 
+    validation_losses = []
+    sindy_model_terms = [np.sum(params['coefficient_mask'])]
+
     print('TRAINING')
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
@@ -31,12 +34,13 @@ def train_network(training_data, val_data, params):
                 sess.run(train_op, feed_dict=train_dict)
             
             if params['print_progress'] and (i % params['print_frequency'] == 0):
-                print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, sindy_predict_norm)
+                validation_losses.append(print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, sindy_predict_norm))
 
             if params['sequential_thresholding'] and (i % params['threshold_frequency'] == 0) and (i > 0):
                 params['coefficient_mask'] = np.abs(sess.run(autoencoder_network['Xi'])) > params['coefficient_threshold']
                 validation_dict['coefficient_mask:0'] = params['coefficient_mask']
                 print('THRESHOLDING: %d active coefficients' % np.sum(params['coefficient_mask']))
+                sindy_model_terms.append(np.sum(params['coefficient_mask']))
 
         print('REFINEMENT')
         for i_refinement in range(params['refinement_epochs']):
@@ -46,14 +50,23 @@ def train_network(training_data, val_data, params):
                 sess.run(train_op_refinement, feed_dict=train_dict)
             
             if params['print_progress'] and (i_refinement % params['print_frequency'] == 0):
-                print_progress(sess, i_refinement, loss_refinement, losses, train_dict, validation_dict, x_norm, sindy_predict_norm)
+                validation_losses.append(print_progress(sess, i_refinement, loss_refinement, losses, train_dict, validation_dict, x_norm, sindy_predict_norm))
 
         saver.save(sess, params['data_path'] + params['save_name'])
         pickle.dump(params, open(params['data_path'] + params['save_name'] + '_params.pkl', 'wb'))
         decoder_losses = sess.run((losses['decoder'], losses['sindy_x']), feed_dict=validation_dict)
         regularization_loss = sess.run(losses['sindy_regularization'], feed_dict=validation_dict)
 
-        return i, x_norm, sindy_predict_norm, decoder_losses[0], decoder_losses[1], regularization_loss
+        results_dict = {}
+        results_dict['num_epochs'] = i
+        results_dict['x_norm'] = x_norm
+        results_dict['sindy_predict_norm'] = sindy_predict_norm
+        results_dict['decoder_loss'] = decoder_losses[0]
+        results_dict['decoder_sindy_loss'] = decoder_losses[1]
+        results_dict['sindy_regularization'] = regularization_loss
+        results_dict['validation_losses'] = np.array(validation_losses)
+        results_dict['sindy_model_terms'] = np.array(sindy_model_terms)
+        return results_dict
 
 
 def print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, sindy_predict_norm):
@@ -80,6 +93,7 @@ def print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, s
     decoder_losses = sess.run((losses['decoder'], losses['sindy_x']), feed_dict=validation_dict)
     loss_ratios = (decoder_losses[0]/x_norm, decoder_losses[1]/sindy_predict_norm)
     print("decoder loss ratio: %f, decoder SINDy loss  ratio: %f" % loss_ratios)
+    return validation_loss_vals
 
 
 def create_feed_dictionary(data, params, idxs=None):

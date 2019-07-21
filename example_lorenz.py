@@ -4,7 +4,7 @@ from scipy.special import legendre
 from sindy_utils import library_size
 
 
-def get_lorenz_data(n_training_ics, n_validation_ics, n_test_ics):
+def get_lorenz_data(n_ics):
     t = np.arange(0, 5, .02)
     n_steps = t.size
     N = 128
@@ -15,27 +15,13 @@ def get_lorenz_data(n_training_ics, n_validation_ics, n_test_ics):
     noise_strength = 1e-6
 
     # training data
-    ics = ic_widths*(np.random.rand(n_training_ics, 3)-.5) + ic_means
-    training_data = generate_lorenz_data(ics, t, N, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    training_data['x'] = training_data['x'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
-    training_data['dx'] = training_data['dx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
-    training_data['ddx'] = training_data['ddx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_training_ics,N)
+    ics = ic_widths*(np.random.rand(n_ics, 3)-.5) + ic_means
+    data = generate_lorenz_data(ics, t, N, linear=False, normalization=np.array([1/40,1/40,1/40]))
+    data['x'] = data['x'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_ics,N)
+    data['dx'] = data['dx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_ics,N)
+    data['ddx'] = data['ddx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_ics,N)
 
-    # validation data
-    ics = ic_widths*(np.random.rand(n_validation_ics, 3)-.5) + ic_means
-    val_data = generate_lorenz_data(ics, t, 128, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    val_data['x'] = val_data['x'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
-    val_data['dx'] = val_data['dx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
-    val_data['ddx'] = val_data['ddx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_validation_ics,N)
-    
-    # test data
-    ics = ic_widths*(np.random.rand(n_test_ics, 3)-.5) + ic_means
-    test_data = generate_lorenz_data(ics, t, 128, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    test_data['x'] = test_data['x'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
-    test_data['dx'] = test_data['dx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
-    test_data['ddx'] = test_data['ddx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_test_ics,N)
-
-    return training_data, val_data, test_data
+    return data
 
 
 def lorenz_coefficients(normalization, poly_order=3):

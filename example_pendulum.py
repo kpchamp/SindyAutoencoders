@@ -2,35 +2,17 @@ import numpy as np
 from scipy.integrate import odeint
 
 
-def get_pendulum_data(n_training_ics, n_validation_ics, n_test_ics):
-    t,x,dx,ddx,z = generate_pendulum_data(n_training_ics)
-    training_data = {}
-    training_data['t'] = t
-    training_data['x'] = x.reshape((n_training_ics*t.size, -1))
-    training_data['dx'] = dx.reshape((n_training_ics*t.size, -1))
-    training_data['ddx'] = ddx.reshape((n_training_ics*t.size, -1))
-    training_data['z'] = z.reshape((n_training_ics*t.size, -1))[:,0:1]
-    training_data['dz'] = z.reshape((n_training_ics*t.size, -1))[:,1:2]
+def get_pendulum_data(n_ics):
+    t,x,dx,ddx,z = generate_pendulum_data(n_ics)
+    data = {}
+    data['t'] = t
+    data['x'] = x.reshape((n_ics*t.size, -1))
+    data['dx'] = dx.reshape((n_ics*t.size, -1))
+    data['ddx'] = ddx.reshape((n_ics*t.size, -1))
+    data['z'] = z.reshape((n_ics*t.size, -1))[:,0:1]
+    data['dz'] = z.reshape((n_ics*t.size, -1))[:,1:2]
 
-    t,x,dx,ddx,z = generate_pendulum_data(n_validation_ics)
-    val_data = {}
-    val_data['t'] = t
-    val_data['x'] = x.reshape((n_validation_ics*t.size, -1))
-    val_data['dx'] = dx.reshape((n_validation_ics*t.size, -1))
-    val_data['ddx'] = ddx.reshape((n_validation_ics*t.size, -1))
-    val_data['z'] = z.reshape((n_validation_ics*t.size, -1))[:,0:1]
-    val_data['dz'] = z.reshape((n_validation_ics*t.size, -1))[:,1:2]
-
-    t,x,dx,ddx,z = generate_pendulum_data(n_test_ics)
-    test_data = {}
-    test_data['t'] = t
-    test_data['x'] = x.reshape((n_test_ics*t.size, -1))
-    test_data['dx'] = dx.reshape((n_test_ics*t.size, -1))
-    test_data['ddx'] = ddx.reshape((n_test_ics*t.size, -1))
-    test_data['z'] = z.reshape((n_test_ics*t.size, -1))[:,0:1]
-    test_data['dz'] = z.reshape((n_test_ics*t.size, -1))[:,1:2]
-
-    return training_data, val_data, test_data
+    return data
 
 
 def generate_pendulum_data(n_ics):
