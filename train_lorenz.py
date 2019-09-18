@@ -12,8 +12,9 @@ import tensorflow as tf
 params = {}
 
 # generate training, validation, testing data
-training_data = get_lorenz_data(2048)
-validation_data = get_lorenz_data(20)
+noise_strength = 1e-6
+training_data = get_lorenz_data(2048, noise_strength=noise_strength)
+validation_data = get_lorenz_data(20, noise_strength=noise_strength)
 
 params['N'] = 128
 params['d'] = 3
