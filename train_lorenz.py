@@ -8,26 +8,26 @@ from training import train_network
 import tensorflow as tf
 
 
-# SET UP PARAMETERS
-params = {}
-
 # generate training, validation, testing data
 noise_strength = 1e-6
 training_data = get_lorenz_data(2048, noise_strength=noise_strength)
 validation_data = get_lorenz_data(20, noise_strength=noise_strength)
 
-params['N'] = 128
-params['d'] = 3
+# SET UP PARAMETERS
+params = {}
+
+params['input_dim'] = 128
+params['latent_dim'] = 3
 params['model_order'] = 1
 params['poly_order'] = 3
 params['include_sine'] = False
-params['l'] = library_size(params['d'], params['poly_order'], False, True)
+params['library_dim'] = library_size(params['latent_dim'], params['poly_order'], False, True)
 
 # set up sequential thresholding
 params['sequential_thresholding'] = True
 params['coefficient_threshold'] = 0.1
 params['threshold_frequency'] = 500
-params['coefficient_mask'] = np.ones((params['l'], params['d']))
+params['coefficient_mask'] = np.ones((params['library_dim'], params['latent_dim']))
 params['coefficient_initialization'] = 'constant'
 
 # define loss weights
@@ -57,7 +57,7 @@ df = pd.DataFrame()
 for i in range(num_experiments):
     print('EXPERIMENT %d' % i)
 
-    params['coefficient_mask'] = np.ones((params['l'], params['d']))
+    params['coefficient_mask'] = np.ones((params['library_dim'], params['latent_dim']))
 
     params['save_name'] = 'lorenz_' + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
 

@@ -18,17 +18,17 @@ def get_lorenz_data(n_ics, noise_strength=0):
     """
     t = np.arange(0, 5, .02)
     n_steps = t.size
-    N = 128
+    input_dim = 128
     
     ic_means = np.array([0,0,25])
     ic_widths = 2*np.array([36,48,41])
 
     # training data
     ics = ic_widths*(np.random.rand(n_ics, 3)-.5) + ic_means
-    data = generate_lorenz_data(ics, t, N, linear=False, normalization=np.array([1/40,1/40,1/40]))
-    data['x'] = data['x'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_ics,N)
-    data['dx'] = data['dx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_ics,N)
-    data['ddx'] = data['ddx'].reshape((-1,N)) + noise_strength*np.random.randn(n_steps*n_ics,N)
+    data = generate_lorenz_data(ics, t, input_dim, linear=False, normalization=np.array([1/40,1/40,1/40]))
+    data['x'] = data['x'].reshape((-1,input_dim)) + noise_strength*np.random.randn(n_steps*n_ics,input_dim)
+    data['dx'] = data['dx'].reshape((-1,input_dim)) + noise_strength*np.random.randn(n_steps*n_ics,input_dim)
+    data['ddx'] = data['ddx'].reshape((-1,input_dim)) + noise_strength*np.random.randn(n_steps*n_ics,input_dim)
 
     return data
 

@@ -12,47 +12,47 @@ def full_network(params):
     Returns:
         network - Dictionary containing the tensorflow objects that make up the network.
     """
-    N = params['N']
-    d = params['d']
+    input_dim = params['input_dim']
+    latent_dim = params['latent_dim']
     activation = params['activation']
     poly_order = params['poly_order']
     if 'include_sine' in params.keys():
         include_sine = params['include_sine']
     else:
         include_sine = False
-    l = params['l']
+    library_dim = params['library_dim']
     model_order = params['model_order']
 
     network = {}
 
-    x = tf.placeholder(tf.float32, shape=[None, N], name='x')
-    dx = tf.placeholder(tf.float32, shape=[None, N], name='dx')
+    x = tf.placeholder(tf.float32, shape=[None, input_dim], name='x')
+    dx = tf.placeholder(tf.float32, shape=[None, input_dim], name='dx')
     if model_order == 2:
-        ddx = tf.placeholder(tf.float32, shape=[None, N], name='ddx')
+        ddx = tf.placeholder(tf.float32, shape=[None, input_dim], name='ddx')
 
     if activation == 'linear':
-        z, x_decode, encoder_weights, encoder_biases, decoder_weights, decoder_biases = linear_autoencoder(x, N, d)
+        z, x_decode, encoder_weights, encoder_biases, decoder_weights, decoder_biases = linear_autoencoder(x, input_dim, latent_dim)
     else:
-        z, x_decode, encoder_weights, encoder_biases, decoder_weights, decoder_biases = nonlinear_autoencoder(x, N, d, params['widths'], activation=activation)
+        z, x_decode, encoder_weights, encoder_biases, decoder_weights, decoder_biases = nonlinear_autoencoder(x, input_dim, latent_dim, params['widths'], activation=activation)
     
     if model_order == 1:
         dz = z_derivative(x, dx, encoder_weights, encoder_biases, activation=activation)
-        Theta = sindy_library_tf(z, d, poly_order, include_sine)
+        Theta = sindy_library_tf(z, latent_dim, poly_order, include_sine)
     else:
         dz,ddz = z_derivative_order2(x, dx, ddx, encoder_weights, encoder_biases, activation=activation)
-        Theta = sindy_library_tf_order2(z, dz, d, poly_order, include_sine)
+        Theta = sindy_library_tf_order2(z, dz, latent_dim, poly_order, include_sine)
 
     if params['coefficient_initialization'] == 'xavier':
-        sindy_coefficients = tf.get_variable('sindy_coefficients', shape=[l,d], initializer=tf.contrib.layers.xavier_initializer())
+        sindy_coefficients = tf.get_variable('sindy_coefficients', shape=[library_dim,latent_dim], initializer=tf.contrib.layers.xavier_initializer())
     elif params['coefficient_initialization'] == 'specified':
         sindy_coefficients = tf.get_variable('sindy_coefficients', initializer=params['init_coefficients'])
     elif params['coefficient_initialization'] == 'constant':
-        sindy_coefficients = tf.get_variable('sindy_coefficients', shape=[l,d], initializer=tf.constant_initializer(1.0))
+        sindy_coefficients = tf.get_variable('sindy_coefficients', shape=[library_dim,latent_dim], initializer=tf.constant_initializer(1.0))
     elif params['coefficient_initialization'] == 'normal':
-        sindy_coefficients = tf.get_variable('sindy_coefficients', shape=[l,d], initializer=tf.initializers.random_normal())
+        sindy_coefficients = tf.get_variable('sindy_coefficients', shape=[library_dim,latent_dim], initializer=tf.initializers.random_normal())
     
     if params['sequential_thresholding']:
-        coefficient_mask = tf.placeholder(tf.float32, shape=[l,d], name='coefficient_mask')
+        coefficient_mask = tf.placeholder(tf.float32, shape=[library_dim,latent_dim], name='coefficient_mask')
         sindy_predict = tf.matmul(Theta, coefficient_mask*sindy_coefficients)
         network['coefficient_mask'] = coefficient_mask
     else:
@@ -131,16 +131,16 @@ def define_loss(network, params):
     return loss, losses, loss_refinement
 
 
-def linear_autoencoder(x, N, d):
-    # z,encoder_weights,encoder_biases = encoder(x, N, d, [], None, 'encoder')
-    # x_decode,decoder_weights,decoder_biases = decoder(z, N, d, [], None, 'decoder')
-    z,encoder_weights,encoder_biases = build_network_layers(x, N, d, [], None, 'encoder')
-    x_decode,decoder_weights,decoder_biases = build_network_layers(z, d, N, [], None, 'decoder')
+def linear_autoencoder(x, input_dim, d):
+    # z,encoder_weights,encoder_biases = encoder(x, input_dim, latent_dim, [], None, 'encoder')
+    # x_decode,decoder_weights,decoder_biases = decoder(z, input_dim, latent_dim, [], None, 'decoder')
+    z,encoder_weights,encoder_biases = build_network_layers(x, input_dim, latent_dim, [], None, 'encoder')
+    x_decode,decoder_weights,decoder_biases = build_network_layers(z, latent_dim, input_dim, [], None, 'decoder')
 
     return z, x_decode, encoder_weights, encoder_biases,decoder_weights,decoder_biases
 
 
-def nonlinear_autoencoder(x, N, d, widths, activation='elu'):
+def nonlinear_autoencoder(x, input_dim, latent_dim, widths, activation='elu'):
     """
     Construct a nonlinear autoencoder.
 
@@ -162,10 +162,10 @@ def nonlinear_autoencoder(x, N, d, widths, activation='elu'):
         activation_function = tf.sigmoid
     else:
         raise ValueError('invalid activation function')
-    # z,encoder_weights,encoder_biases = encoder(x, N, d, widths, activation_function, 'encoder')
-    # x_decode,decoder_weights,decoder_biases = decoder(z, N, d, widths[::-1], activation_function, 'decoder')
-    z,encoder_weights,encoder_biases = build_network_layers(x, N, d, widths, activation_function, 'encoder')
-    x_decode,decoder_weights,decoder_biases = build_network_layers(z, d, N, widths[::-1], activation_function, 'decoder')
+    # z,encoder_weights,encoder_biases = encoder(x, input_dim, latent_dim, widths, activation_function, 'encoder')
+    # x_decode,decoder_weights,decoder_biases = decoder(z, input_dim, latent_dim, widths[::-1], activation_function, 'decoder')
+    z,encoder_weights,encoder_biases = build_network_layers(x, input_dim, latent_dim, widths, activation_function, 'encoder')
+    x_decode,decoder_weights,decoder_biases = build_network_layers(z, latent_dim, input_dim, widths[::-1], activation_function, 'decoder')
 
     return z, x_decode, encoder_weights, encoder_biases, decoder_weights, decoder_biases
 
@@ -211,13 +211,13 @@ def build_network_layers(input, input_dim, output_dim, widths, activation, name)
     return input, weights, biases
 
 
-# def encoder(input, N, d, widths, activation, name):
+# def encoder(input, input_dim, d, widths, activation, name):
 #     """
 #     Construct the encoder.
 
 #     Arguments:
-#         input - 2D tensorflow array, input to the network (shape is [?,N])
-#         N - Integer, number of state variables in the original data space
+#         input - 2D tensorflow array, input to the network (shape is [?,input_dim])
+#         input_dim - Integer, number of state variables in the original data space
 #         d - Integer, number of state variables in the decoder space
 #         widths - List of integers representing how many units are in each network layer
 #         activation - Tensorflow function to be used as the activation function at each layer
@@ -230,7 +230,7 @@ def build_network_layers(input, input_dim, output_dim, widths, activation, name)
 #     """
 #     weights = []
 #     biases = []
-#     last_width=N
+#     last_width=input_dim
 #     for i,n_units in enumerate(widths):
 #         W = tf.get_variable(name+'_W'+str(i), shape=[last_width,n_units],
 #             initializer=tf.contrib.layers.xavier_initializer())
@@ -242,9 +242,9 @@ def build_network_layers(input, input_dim, output_dim, widths, activation, name)
 #         last_width = n_units
 #         weights.append(W)
 #         biases.append(b)
-#     W = tf.get_variable(name+'_W'+str(len(widths)), shape=[last_width,d],
+#     W = tf.get_variable(name+'_W'+str(len(widths)), shape=[last_width,latent_dim],
 #         initializer=tf.contrib.layers.xavier_initializer())
-#     b = tf.get_variable(name+'_b'+str(len(widths)), shape=[d],
+#     b = tf.get_variable(name+'_b'+str(len(widths)), shape=[latent_dim],
 #         initializer=tf.constant_initializer(0.0))
 #     input = tf.matmul(input,W) + b
 #     weights.append(W)
@@ -252,26 +252,26 @@ def build_network_layers(input, input_dim, output_dim, widths, activation, name)
 #     return input, weights, biases
 
 
-# def decoder(input, N, d, widths, activation, name):
+# def decoder(input, input_dim, latent_dim, widths, activation, name):
 #     """
 #     Construct the decoder.
 
 #     Arguments:
-#         input - 2D tensorflow array, input to the network (shape is [?,d])
-#         N - Integer, number of state variables in the original data space
-#         d - Integer, number of state variables in the decoder space
+#         input - 2D tensorflow array, input to the network (shape is [?,latent_dim])
+#         input_dim - Integer, number of state variables in the original data space
+#         latent_dim - Integer, number of state variables in the decoder space
 #         widths - List of integers representing how many units are in each network layer
 #         activation - Tensorflow function to be used as the activation function at each layer
 #         name - String, prefix to be used in naming the tensorflow variables
 
 #     Returns:
-#         input - Tensorflow array, output of the decoder (shape is [?,N])
+#         input - Tensorflow array, output of the decoder (shape is [?,input_dim])
 #         weights - List of tensorflow arrays containing the network weights
 #         biases - List of tensorflow arrays containing the network biases
 #     """
 #     weights = []
 #     biases = []
-#     last_width=d
+#     last_width=latent_dim
 #     for i,n_units in enumerate(widths):
 #         W = tf.get_variable(name+'_W'+str(i), shape=[last_width,n_units],
 #             initializer=tf.contrib.layers.xavier_initializer())
@@ -283,9 +283,9 @@ def build_network_layers(input, input_dim, output_dim, widths, activation, name)
 #         last_width = n_units
 #         weights.append(W)
 #         biases.append(b)
-#     W = tf.get_variable(name+'_W'+str(len(widths)), shape=[last_width,N],
+#     W = tf.get_variable(name+'_W'+str(len(widths)), shape=[last_width,input_dim],
 #         initializer=tf.contrib.layers.xavier_initializer())
-#     b = tf.get_variable(name+'_b'+str(len(widths)), shape=[N],
+#     b = tf.get_variable(name+'_b'+str(len(widths)), shape=[input_dim],
 #         initializer=tf.constant_initializer(0.0))
 #     input = tf.matmul(input,W) + b
 #     weights.append(W)
@@ -293,14 +293,14 @@ def build_network_layers(input, input_dim, output_dim, widths, activation, name)
 #     return input, weights, biases
 
 
-def sindy_library_tf(z, d, poly_order, include_sine=False):
+def sindy_library_tf(z, latent_dim, poly_order, include_sine=False):
     """
     Build the SINDy library.
 
     Arguments:
         z - 2D tensorflow array of the snapshots on which to build the library. Shape is number of
         time points by the number of state variables.
-        d - Integer, number of state variable in z.
+        latent_dim - Integer, number of state variable in z.
         poly_order - Integer, polynomial order to which to build the library. Max value is 5.
         include_sine - Boolean, whether or not to include sine terms in the library. Default False.
 
@@ -311,43 +311,43 @@ def sindy_library_tf(z, d, poly_order, include_sine=False):
     """
     library = [tf.ones(tf.shape(z)[0])]
 
-    for i in range(d):
+    for i in range(latent_dim):
         library.append(z[:,i])
 
     if poly_order > 1:
-        for i in range(d):
-            for j in range(i,d):
+        for i in range(latent_dim):
+            for j in range(i,latent_dim):
                 library.append(tf.multiply(z[:,i], z[:,j]))
 
     if poly_order > 2:
-        for i in range(d):
-            for j in range(i,d):
-                for k in range(j,d):
+        for i in range(latent_dim):
+            for j in range(i,latent_dim):
+                for k in range(j,latent_dim):
                     library.append(z[:,i]*z[:,j]*z[:,k])
 
     if poly_order > 3:
-        for i in range(d):
-            for j in range(i,d):
-                for k in range(j,d):
-                    for p in range(k,d):
+        for i in range(latent_dim):
+            for j in range(i,latent_dim):
+                for k in range(j,latent_dim):
+                    for p in range(k,latent_dim):
                         library.append(z[:,i]*z[:,j]*z[:,k]*z[:,p])
 
     if poly_order > 4:
-        for i in range(d):
-            for j in range(i,d):
-                for k in range(j,d):
-                    for p in range(k,d):
-                        for q in range(p,d):
+        for i in range(latent_dim):
+            for j in range(i,latent_dim):
+                for k in range(j,latent_dim):
+                    for p in range(k,latent_dim):
+                        for q in range(p,latent_dim):
                             library.append(z[:,i]*z[:,j]*z[:,k]*z[:,p]*z[:,q])
 
     if include_sine:
-        for i in range(d):
+        for i in range(latent_dim):
             library.append(tf.sin(z[:,i]))
 
     return tf.stack(library, axis=1)
 
 
-def sindy_library_tf_order2(z, dz, d, poly_order, include_sine=False):
+def sindy_library_tf_order2(z, dz, latent_dim, poly_order, include_sine=False):
     """
     Build the SINDy library for a second order system. This is essentially the same as for a first
     order system, but library terms are also built for the derivatives.
@@ -356,37 +356,37 @@ def sindy_library_tf_order2(z, dz, d, poly_order, include_sine=False):
 
     z_combined = tf.concat([z, dz], 1)
 
-    for i in range(2*d):
+    for i in range(2*latent_dim):
         library.append(z_combined[:,i])
 
     if poly_order > 1:
-        for i in range(2*d):
-            for j in range(i,2*d):
+        for i in range(2*latent_dim):
+            for j in range(i,2*latent_dim):
                 library.append(tf.multiply(z_combined[:,i], z_combined[:,j]))
 
     if poly_order > 2:
-        for i in range(2*d):
-            for j in range(i,2*d):
-                for k in range(j,2*d):
+        for i in range(2*latent_dim):
+            for j in range(i,2*latent_dim):
+                for k in range(j,2*latent_dim):
                     library.append(z_combined[:,i]*z_combined[:,j]*z_combined[:,k])
 
     if poly_order > 3:
-        for i in range(2*d):
-            for j in range(i,2*d):
-                for k in range(j,2*d):
-                    for p in range(k,2*d):
+        for i in range(2*latent_dim):
+            for j in range(i,2*latent_dim):
+                for k in range(j,2*latent_dim):
+                    for p in range(k,2*latent_dim):
                         library.append(z_combined[:,i]*z_combined[:,j]*z_combined[:,k]*z_combined[:,p])
 
     if poly_order > 4:
-        for i in range(2*d):
-            for j in range(i,2*d):
-                for k in range(j,2*d):
-                    for p in range(k,2*d):
-                        for q in range(p,2*d):
+        for i in range(2*latent_dim):
+            for j in range(i,2*latent_dim):
+                for k in range(j,2*latent_dim):
+                    for p in range(k,2*latent_dim):
+                        for q in range(p,2*latent_dim):
                             library.append(z_combined[:,i]*z_combined[:,j]*z_combined[:,k]*z_combined[:,p]*z_combined[:,q])
 
     if include_sine:
-        for i in range(2*d):
+        for i in range(2*latent_dim):
             library.append(tf.sin(z_combined[:,i]))
 
     return tf.stack(library, axis=1)

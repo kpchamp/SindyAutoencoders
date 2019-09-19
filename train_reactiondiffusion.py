@@ -14,18 +14,18 @@ params = {}
 # generate training, validation, testing data
 training_data, validation_data, test_data = get_rd_data()
 
-params['N'] = training_data['y1'].size*training_data['y2'].size
-params['d'] = 2
+params['input_dim'] = training_data['y1'].size*training_data['y2'].size
+params['latent_dim'] = 2
 params['model_order'] = 1
 params['poly_order'] = 3
 params['include_sine'] = True
-params['l'] = library_size(params['d'], params['poly_order'], params['include_sine'], True)
+params['library_dim'] = library_size(params['latent_dim'], params['poly_order'], params['include_sine'], True)
 
 # set up sequential thresholding
 params['sequential_thresholding'] = True
 params['coefficient_threshold'] = 0.1
 params['threshold_frequency'] = 500
-params['coefficient_mask'] = np.ones((params['l'], params['d']))
+params['coefficient_mask'] = np.ones((params['library_dim'], params['latent_dim']))
 params['coefficient_initialization'] = 'constant'
 
 # define loss weights
@@ -55,7 +55,7 @@ df = pd.DataFrame()
 for i in range(num_experiments):
     print('EXPERIMENT %d' % i)
 
-    params['coefficient_mask'] = np.ones((params['l'], params['d']))
+    params['coefficient_mask'] = np.ones((params['library_dim'], params['latent_dim']))
 
     params['save_name'] = 'rd_' + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
 
