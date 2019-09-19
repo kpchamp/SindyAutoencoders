@@ -43,20 +43,20 @@ def full_network(params):
         Theta = sindy_library_tf_order2(z, dz, d, poly_order, include_sine)
 
     if params['coefficient_initialization'] == 'xavier':
-        Xi = tf.get_variable('Xi', shape=[l,d], initializer=tf.contrib.layers.xavier_initializer())
+        sindy_coefficients = tf.get_variable('sindy_coefficients', shape=[l,d], initializer=tf.contrib.layers.xavier_initializer())
     elif params['coefficient_initialization'] == 'specified':
-        Xi = tf.get_variable('Xi', initializer=params['init_coefficients'])
+        sindy_coefficients = tf.get_variable('sindy_coefficients', initializer=params['init_coefficients'])
     elif params['coefficient_initialization'] == 'constant':
-        Xi = tf.get_variable('Xi', shape=[l,d], initializer=tf.constant_initializer(1.0))
+        sindy_coefficients = tf.get_variable('sindy_coefficients', shape=[l,d], initializer=tf.constant_initializer(1.0))
     elif params['coefficient_initialization'] == 'normal':
-        Xi = tf.get_variable('Xi', shape=[l,d], initializer=tf.initializers.random_normal())
+        sindy_coefficients = tf.get_variable('sindy_coefficients', shape=[l,d], initializer=tf.initializers.random_normal())
     
     if params['sequential_thresholding']:
         coefficient_mask = tf.placeholder(tf.float32, shape=[l,d], name='coefficient_mask')
-        sindy_predict = tf.matmul(Theta, coefficient_mask*Xi)
+        sindy_predict = tf.matmul(Theta, coefficient_mask*sindy_coefficients)
         network['coefficient_mask'] = coefficient_mask
     else:
-        sindy_predict = tf.matmul(Theta, Xi)
+        sindy_predict = tf.matmul(Theta, sindy_coefficients)
 
     if model_order == 1:
         dx_decode = z_derivative(z, sindy_predict, decoder_weights, decoder_biases, activation=activation)
@@ -75,7 +75,7 @@ def full_network(params):
     network['decoder_weights'] = decoder_weights
     network['decoder_biases'] = decoder_biases
     network['Theta'] = Theta
-    network['Xi'] = Xi
+    network['sindy_coefficients'] = sindy_coefficients
 
     if model_order == 1:
         network['dz_predict'] = sindy_predict
@@ -108,7 +108,7 @@ def define_loss(network, params):
         ddz_predict = network['ddz_predict']
         ddx = network['ddx']
         ddx_decode = network['ddx_decode']
-    Xi = params['coefficient_mask']*network['Xi']
+    sindy_coefficients = params['coefficient_mask']*network['sindy_coefficients']
 
     losses = {}
     losses['decoder'] = tf.reduce_mean((x - x_decode)**2)
@@ -118,7 +118,7 @@ def define_loss(network, params):
     else:
         losses['sindy_z'] = tf.reduce_mean((ddz - ddz_predict)**2)
         losses['sindy_x'] = tf.reduce_mean((ddx - ddx_decode)**2)
-    losses['sindy_regularization'] = tf.reduce_mean(tf.abs(Xi))
+    losses['sindy_regularization'] = tf.reduce_mean(tf.abs(sindy_coefficients))
     loss = params['loss_weight_decoder'] * losses['decoder'] \
            + params['loss_weight_sindy_z'] * losses['sindy_z'] \
            + params['loss_weight_sindy_x'] * losses['sindy_x'] \

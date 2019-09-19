@@ -37,7 +37,7 @@ def train_network(training_data, val_data, params):
                 validation_losses.append(print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, sindy_predict_norm))
 
             if params['sequential_thresholding'] and (i % params['threshold_frequency'] == 0) and (i > 0):
-                params['coefficient_mask'] = np.abs(sess.run(autoencoder_network['Xi'])) > params['coefficient_threshold']
+                params['coefficient_mask'] = np.abs(sess.run(autoencoder_network['sindy_coefficients'])) > params['coefficient_threshold']
                 validation_dict['coefficient_mask:0'] = params['coefficient_mask']
                 print('THRESHOLDING: %d active coefficients' % np.sum(params['coefficient_mask']))
                 sindy_model_terms.append(np.sum(params['coefficient_mask']))

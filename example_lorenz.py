@@ -100,7 +100,7 @@ def generate_lorenz_data(ics, t, n_points, linear=True, normalization=None,
         spatial mapping (y_spatial), high-dimensional modes used to generate the full dataset
         (modes), low-dimensional Lorenz dynamics (z, along with 1st and 2nd derivatives dz and
         ddz), high-dimensional dataset (x, along with 1st and 2nd derivatives dx and ddx), and
-        the true Lorenz coefficient matrix for SINDy (Xi).
+        the true Lorenz coefficient matrix for SINDy.
     """
 
     n_ics = ics.shape[0]
@@ -163,9 +163,9 @@ def generate_lorenz_data(ics, t, n_points, linear=True, normalization=None,
                           + modes[5]*(6*z[i,j,2]*dz[i,j,2]**2 + 3*(z[i,j,2]**2)*ddz[i,j,2])
 
     if normalization is None:
-        Xi = lorenz_coefficients([1,1,1], sigma=sigma, beta=beta, rho=rho)
+        sindy_coefficients = lorenz_coefficients([1,1,1], sigma=sigma, beta=beta, rho=rho)
     else:
-        Xi = lorenz_coefficients(normalization, sigma=sigma, beta=beta, rho=rho)
+        sindy_coefficients = lorenz_coefficients(normalization, sigma=sigma, beta=beta, rho=rho)
 
     data = {}
     data['t'] = t
@@ -177,6 +177,6 @@ def generate_lorenz_data(ics, t, n_points, linear=True, normalization=None,
     data['z'] = z
     data['dz'] = dz
     data['ddz'] = ddz
-    data['Xi'] = Xi.astype(np.float32)
+    data['sindy_coefficients'] = sindy_coefficients.astype(np.float32)
 
     return data
