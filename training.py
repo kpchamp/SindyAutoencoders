@@ -54,18 +54,25 @@ def train_network(training_data, val_data, params):
 
         saver.save(sess, params['data_path'] + params['save_name'])
         pickle.dump(params, open(params['data_path'] + params['save_name'] + '_params.pkl', 'wb'))
-        decoder_losses = sess.run((losses['decoder'], losses['sindy_x']), feed_dict=validation_dict)
-        regularization_loss = sess.run(losses['sindy_regularization'], feed_dict=validation_dict)
+        final_losses = sess.run((losses['decoder'], losses['sindy_x'], losses['sindy_z'],
+                                 losses['sindy_regularization']),
+                                feed_dict=validation_dict)
+        z_norm = np.mean(sess.run(autoencoder_network['z'], feed_dict=validation_dict)**2)
+        sindy_coefficients = sess.run(autoencoder_network['sindy_coefficients'], feed_dict={})
 
         results_dict = {}
         results_dict['num_epochs'] = i
         results_dict['x_norm'] = x_norm
         results_dict['sindy_predict_norm'] = sindy_predict_norm
-        results_dict['decoder_loss'] = decoder_losses[0]
-        results_dict['decoder_sindy_loss'] = decoder_losses[1]
-        results_dict['sindy_regularization'] = regularization_loss
+        results_dict['z_norm'] = z_norm
+        results_dict['sindy_coefficients'] = sindy_coefficients
+        results_dict['loss_decoder'] = final_losses[0]
+        results_dict['loss_decoder_sindy'] = final_losses[1]
+        results_dict['loss_sindy'] = final_losses[2]
+        results_dict['loss_sindy_regularization'] = final_losses[3]
         results_dict['validation_losses'] = np.array(validation_losses)
         results_dict['sindy_model_terms'] = np.array(sindy_model_terms)
+
         return results_dict
 
 
