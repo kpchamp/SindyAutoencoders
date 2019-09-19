@@ -81,7 +81,11 @@ def print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, s
         train_dict - feed dictionary of training data
         validation_dict - feed dictionary of validation data
         x_norm - float, the mean square value of the input
+        sindy_predict_norm - float, the mean square value of the time derivatives of the input.
+        Can be first or second order time derivatives depending on the model order.
 
+    Returns:
+        Tuple of losses calculated on the validation set.
     """
     training_loss_vals = sess.run((loss,) + tuple(losses.values()), feed_dict=train_dict)
     validation_loss_vals = sess.run((loss,) + tuple(losses.values()), feed_dict=validation_dict)
@@ -97,6 +101,24 @@ def print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, s
 
 
 def create_feed_dictionary(data, params, idxs=None):
+    """
+    Create the feed dictionary for passing into tensorflow.
+
+    Arguments:
+        data - Dictionary object containing the data to be passed in. Must contain input data x,
+        along the first (and possibly second) order time derivatives dx (ddx).
+        params - Dictionary object containing model and training parameters. The relevant
+        parameters are model_order (which determines whether the SINDy model predicts first or
+        second order time derivatives), sequential_thresholding (which indicates whether or not
+        coefficient thresholding is performed), coefficient_mask (optional if sequential
+        thresholding is performed; 0/1 mask that selects the relevant coefficients in the SINDy
+        model), and learning rate (float that determines the learning rate).
+        idxs - Optional array of indices that selects which examples from the dataset are passed
+        in to tensorflow. If None, all examples are used.
+
+    Returns:
+        feed_dict - Dictionary object containing the relevant data to pass to tensorflow.
+    """
     if idxs is None:
         idxs = np.arange(data['x'].shape[0])
     feed_dict = {}
