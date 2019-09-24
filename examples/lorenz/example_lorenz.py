@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.integrate import odeint
 from scipy.special import legendre, chebyt
+import sys
+sys.path.append('../../src')
 from sindy_utils import library_size
 
 
