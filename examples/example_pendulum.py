@@ -34,30 +34,61 @@ def generate_pendulum_data(n_ics):
         dz[i] = np.array([f(z[i,j], t[j]) for j in range(len(t))])
         i += 1
 
-    n = 51
-    xx,yy = np.meshgrid(np.linspace(-1.5,1.5,n),np.linspace(1.5,-1.5,n))
-    create_image = lambda theta : np.exp(-((xx-np.cos(theta-np.pi/2))**2 + (yy-np.sin(theta-np.pi/2))**2)/.05)
-    argument_derivative = lambda theta,dtheta : -1/.05*(2*(xx - np.cos(theta-np.pi/2))*np.sin(theta-np.pi/2)*dtheta \
-                                                      + 2*(yy - np.sin(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*dtheta)
-    argument_derivative2 = lambda theta,dtheta,ddtheta : -2/.05*((np.sin(theta-np.pi/2))*np.sin(theta-np.pi/2)*dtheta**2 \
-                                                               + (xx - np.cos(theta-np.pi/2))*np.cos(theta-np.pi/2)*dtheta**2 \
-                                                               + (xx - np.cos(theta-np.pi/2))*np.sin(theta-np.pi/2)*ddtheta \
-                                                               + (-np.cos(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*dtheta**2 \
-                                                               + (yy - np.sin(theta-np.pi/2))*(np.sin(theta-np.pi/2))*dtheta**2 \
-                                                               + (yy - np.sin(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*ddtheta)
+    x,dx,ddx = pendulum_to_movie(z, dz)
+
+    # n = 51
+    # xx,yy = np.meshgrid(np.linspace(-1.5,1.5,n),np.linspace(1.5,-1.5,n))
+    # create_image = lambda theta : np.exp(-((xx-np.cos(theta-np.pi/2))**2 + (yy-np.sin(theta-np.pi/2))**2)/.05)
+    # argument_derivative = lambda theta,dtheta : -1/.05*(2*(xx - np.cos(theta-np.pi/2))*np.sin(theta-np.pi/2)*dtheta \
+    #                                                   + 2*(yy - np.sin(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*dtheta)
+    # argument_derivative2 = lambda theta,dtheta,ddtheta : -2/.05*((np.sin(theta-np.pi/2))*np.sin(theta-np.pi/2)*dtheta**2 \
+    #                                                            + (xx - np.cos(theta-np.pi/2))*np.cos(theta-np.pi/2)*dtheta**2 \
+    #                                                            + (xx - np.cos(theta-np.pi/2))*np.sin(theta-np.pi/2)*ddtheta \
+    #                                                            + (-np.cos(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*dtheta**2 \
+    #                                                            + (yy - np.sin(theta-np.pi/2))*(np.sin(theta-np.pi/2))*dtheta**2 \
+    #                                                            + (yy - np.sin(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*ddtheta)
         
-    x = np.zeros((n_ics, t.size, n, n))
-    dx = np.zeros((n_ics, t.size, n, n))
-    ddx = np.zeros((n_ics, t.size, n, n))
+    # x = np.zeros((n_ics, t.size, n, n))
+    # dx = np.zeros((n_ics, t.size, n, n))
+    # ddx = np.zeros((n_ics, t.size, n, n))
+    # for i in range(n_ics):
+    #     for j in range(t.size):
+    #         z[i,j,0] = wrap_to_pi(z[i,j,0])
+    #         x[i,j] = create_image(z[i,j,0])
+    #         dx[i,j] = (create_image(z[i,j,0])*argument_derivative(z[i,j,0], dz[i,j,0]))
+    #         ddx[i,j] = create_image(z[i,j,0])*((argument_derivative(z[i,j,0], dz[i,j,0]))**2 \
+    #                         + argument_derivative2(z[i,j,0], dz[i,j,0], dz[i,j,1]))
+
+    return t,x,dx,ddx,z
+
+
+def pendulum_to_movie(z, dz):
+    n_ics = z.shape[0]
+    n_samples = z.shape[1]
+    n = 51
+    y1,y2 = np.meshgrid(np.linspace(-1.5,1.5,n),np.linspace(1.5,-1.5,n))
+    create_image = lambda theta : np.exp(-((y1-np.cos(theta-np.pi/2))**2 + (y2-np.sin(theta-np.pi/2))**2)/.05)
+    argument_derivative = lambda theta,dtheta : -1/.05*(2*(y1 - np.cos(theta-np.pi/2))*np.sin(theta-np.pi/2)*dtheta \
+                                                      + 2*(y2 - np.sin(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*dtheta)
+    argument_derivative2 = lambda theta,dtheta,ddtheta : -2/.05*((np.sin(theta-np.pi/2))*np.sin(theta-np.pi/2)*dtheta**2 \
+                                                               + (y1 - np.cos(theta-np.pi/2))*np.cos(theta-np.pi/2)*dtheta**2 \
+                                                               + (y1 - np.cos(theta-np.pi/2))*np.sin(theta-np.pi/2)*ddtheta \
+                                                               + (-np.cos(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*dtheta**2 \
+                                                               + (y2 - np.sin(theta-np.pi/2))*(np.sin(theta-np.pi/2))*dtheta**2 \
+                                                               + (y2 - np.sin(theta-np.pi/2))*(-np.cos(theta-np.pi/2))*ddtheta)
+        
+    x = np.zeros((n_ics, n_samples, n, n))
+    dx = np.zeros((n_ics, n_samples, n, n))
+    ddx = np.zeros((n_ics, n_samples, n, n))
     for i in range(n_ics):
-        for j in range(t.size):
+        for j in range(n_samples):
             z[i,j,0] = wrap_to_pi(z[i,j,0])
             x[i,j] = create_image(z[i,j,0])
             dx[i,j] = (create_image(z[i,j,0])*argument_derivative(z[i,j,0], dz[i,j,0]))
             ddx[i,j] = create_image(z[i,j,0])*((argument_derivative(z[i,j,0], dz[i,j,0]))**2 \
                             + argument_derivative2(z[i,j,0], dz[i,j,0], dz[i,j,1]))
-
-    return t,x,dx,ddx,z
+            
+    return x,dx,ddx
 
 
 def wrap_to_pi(z):
