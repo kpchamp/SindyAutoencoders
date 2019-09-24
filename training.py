@@ -17,9 +17,9 @@ def train_network(training_data, val_data, params):
 
     x_norm = np.mean(val_data['x']**2)
     if params['model_order'] == 1:
-        sindy_predict_norm = np.mean(val_data['dx']**2)
+        sindy_predict_norm_x = np.mean(val_data['dx']**2)
     else:
-        sindy_predict_norm = np.mean(val_data['ddx']**2)
+        sindy_predict_norm_x = np.mean(val_data['ddx']**2)
 
     validation_losses = []
     sindy_model_terms = [np.sum(params['coefficient_mask'])]
@@ -34,7 +34,7 @@ def train_network(training_data, val_data, params):
                 sess.run(train_op, feed_dict=train_dict)
             
             if params['print_progress'] and (i % params['print_frequency'] == 0):
-                validation_losses.append(print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, sindy_predict_norm))
+                validation_losses.append(print_progress(sess, i, loss, losses, train_dict, validation_dict, x_norm, sindy_predict_norm_x))
 
             if params['sequential_thresholding'] and (i % params['threshold_frequency'] == 0) and (i > 0):
                 params['coefficient_mask'] = np.abs(sess.run(autoencoder_network['sindy_coefficients'])) > params['coefficient_threshold']
@@ -50,21 +50,24 @@ def train_network(training_data, val_data, params):
                 sess.run(train_op_refinement, feed_dict=train_dict)
             
             if params['print_progress'] and (i_refinement % params['print_frequency'] == 0):
-                validation_losses.append(print_progress(sess, i_refinement, loss_refinement, losses, train_dict, validation_dict, x_norm, sindy_predict_norm))
+                validation_losses.append(print_progress(sess, i_refinement, loss_refinement, losses, train_dict, validation_dict, x_norm, sindy_predict_norm_x))
 
         saver.save(sess, params['data_path'] + params['save_name'])
         pickle.dump(params, open(params['data_path'] + params['save_name'] + '_params.pkl', 'wb'))
         final_losses = sess.run((losses['decoder'], losses['sindy_x'], losses['sindy_z'],
                                  losses['sindy_regularization']),
                                 feed_dict=validation_dict)
-        z_norm = np.mean(sess.run(autoencoder_network['z'], feed_dict=validation_dict)**2)
+        if params['model_order'] == 1:
+            sindy_predict_norm_z = np.mean(sess.run(autoencoder_network['dz'], feed_dict=validation_dict)**2)
+        else:
+            sindy_predict_norm_z = np.mean(sess.run(autoencoder_network['ddz'], feed_dict=validation_dict)**2)
         sindy_coefficients = sess.run(autoencoder_network['sindy_coefficients'], feed_dict={})
 
         results_dict = {}
         results_dict['num_epochs'] = i
         results_dict['x_norm'] = x_norm
-        results_dict['sindy_predict_norm'] = sindy_predict_norm
-        results_dict['z_norm'] = z_norm
+        results_dict['sindy_predict_norm_x'] = sindy_predict_norm_x
+        results_dict['sindy_predict_norm_z'] = sindy_predict_norm_z
         results_dict['sindy_coefficients'] = sindy_coefficients
         results_dict['loss_decoder'] = final_losses[0]
         results_dict['loss_decoder_sindy'] = final_losses[1]
