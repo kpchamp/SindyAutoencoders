@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
-import pickle
-from autoencoder import full_network, define_loss
+import dill
+
+from .autoencoder import full_network, define_loss
 
 
 def train_network(training_data, val_data, params):
@@ -53,7 +54,7 @@ def train_network(training_data, val_data, params):
                 validation_losses.append(print_progress(sess, i_refinement, loss_refinement, losses, train_dict, validation_dict, x_norm, sindy_predict_norm_x))
 
         saver.save(sess, params['data_path'] + params['save_name'])
-        pickle.dump(params, open(params['data_path'] + params['save_name'] + '_params.pkl', 'wb'))
+        dill.dump(params, open(params['data_path'] + params['save_name'] + '_params.pkl', 'wb'))
         final_losses = sess.run((losses['decoder'], losses['sindy_x'], losses['sindy_z'],
                                  losses['sindy_regularization']),
                                 feed_dict=validation_dict)
