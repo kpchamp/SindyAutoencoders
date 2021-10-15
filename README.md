@@ -58,4 +58,4 @@ pip install -e .
 from sindyae import train_network, library_size
 ```
 
-See `examples` subdirectories with working examples/
+See `examples` subdirectories with working examples (e.g. `pendulum/train_pendulum.py` and `pendulum/analyze_pendulum_model1.py`)
