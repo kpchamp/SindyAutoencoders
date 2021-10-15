@@ -5,18 +5,17 @@
 
 
 import sys
-# sys.path.append("../../src")
 import os
 import datetime
 import pandas as pd
 import numpy as np
-from sindyae import library_size, train_network
 import tensorflow as tf
+from sindyae import library_size, train_network
 
 from example_pendulum import get_pendulum_data
 
 
-# # Generate data
+print("Generate data")
 
 # In[ ]:
 
@@ -25,7 +24,7 @@ training_data = get_pendulum_data(100)
 validation_data = get_pendulum_data(10)
 
 
-# # Set up model and training parameters
+print("Set up model and training parameters")
 
 # In[ ]:
 
@@ -69,7 +68,7 @@ params['max_epochs'] = 5001
 params['refinement_epochs'] = 1001
 
 
-# # Run training experiments
+print("Run training experiments")
 
 # In[ ]:
 

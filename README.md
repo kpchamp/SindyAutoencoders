@@ -39,3 +39,23 @@ Creating the network architecture and running the training procedure requires th
 * `print_frequency` - print progress at intervals of this many epochs
 * `max_epochs` - how many epochs to run the training procedure for
 * `refinement_epochs` - how many epochs to run the refinement training for (see paper for description of the refinement procedure)
+
+
+
+## Installation
+
+```bash
+git clone https://github.com/kpchamp/SindyAutoencoders.git
+cd SindyAutoencoders
+conda env create -f environment.yml
+conda activate sindyae
+pip install -e .
+```
+
+## Usage
+
+```python
+from sindyae import train_network, library_size
+```
+
+See `examples` subdirectories with working examples/

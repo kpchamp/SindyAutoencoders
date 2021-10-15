@@ -7,7 +7,7 @@
 import sys
 import os
 import numpy as np
-import pickle
+import dill
 from scipy.integrate import odeint
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -18,9 +18,10 @@ from example_pendulum import get_pendulum_data, pendulum_to_movie
 
 # In[2]:
 
+
 data_path = os.getcwd() + '/'
 save_name = 'model1'
-params = pickle.load(open(data_path + save_name + '_params.pkl', 'rb'))
+params = dill.load(open(data_path + save_name + '_params.pkl', 'rb'))
 params['save_name'] = data_path + save_name
 
 autoencoder_network = full_network(params)

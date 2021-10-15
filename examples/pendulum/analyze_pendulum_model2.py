@@ -5,27 +5,23 @@
 
 
 import sys
-sys.path.append("../../src")
 import os
 import numpy as np
-import pickle
-from example_pendulum import get_pendulum_data, pendulum_to_movie
+import dill
 from scipy.integrate import odeint
-from autoencoder import full_network
-from training import create_feed_dictionary
-from sindy_utils import sindy_simulate_order2
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-get_ipython().run_line_magic('matplotlib', 'inline')
+from sindyae import full_network, create_feed_dictionary, sindy_simulate_order2
 
+from example_pendulum import get_pendulum_data, pendulum_to_movie
 
 # In[2]:
 
 
 data_path = os.getcwd() + '/'
 save_name = 'model2'
-params = pickle.load(open(data_path + save_name + '_params.pkl', 'rb'))
+params = dill.load(open(data_path + save_name + '_params.pkl', 'rb'))
 params['save_name'] = data_path + save_name
 
 autoencoder_network = full_network(params)

@@ -7,7 +7,7 @@
 import sys
 import os
 import numpy as np
-import pickle
+import dill
 import scipy.io as sio
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -21,7 +21,7 @@ from example_reactiondiffusion import get_rd_data
 
 data_path = os.getcwd() + '/'
 save_name = 'model2'
-params = pickle.load(open(data_path + save_name + '_params.pkl', 'rb'))
+params = dill.load(open(data_path + save_name + '_params.pkl', 'rb'))
 params['save_name'] = data_path + save_name
 
 autoencoder_network = full_network(params)

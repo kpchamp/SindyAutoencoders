@@ -5,18 +5,16 @@
 
 
 import sys
-sys.path.append("../../src")
 import os
 import datetime
 import pandas as pd
 import numpy as np
-from example_lorenz import get_lorenz_data
-from sindy_utils import library_size
-from training import train_network
 import tensorflow as tf
+from sindyae import library_size, train_network
 
+from example_lorenz import get_lorenz_data
 
-# # Generate data
+print("Generate data")
 
 # In[ ]:
 
@@ -27,7 +25,7 @@ training_data = get_lorenz_data(1024, noise_strength=noise_strength)
 validation_data = get_lorenz_data(20, noise_strength=noise_strength)
 
 
-# # Set up model and training parameters
+print("Set up model and training parameters")
 
 # In[ ]:
 
@@ -71,7 +69,7 @@ params['max_epochs'] = 5001
 params['refinement_epochs'] = 1001
 
 
-# # Run training experiments
+print("Run training experiments")
 
 # In[ ]:
 
