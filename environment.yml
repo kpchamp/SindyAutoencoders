@@ -1,0 +1,16 @@
+name: sindyae
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - scipy
+  - matplotlib
+  - pysindy
+  - tensorflow=1.9
+  - numpy
+  - scipys
+  - dill
+  - derivative
+  - cvxpy
